@@ -16,12 +16,40 @@ int main()
     sf::RenderWindow window(sf::VideoMode(800, 800), "C++ SFML Parachute Panic!");
     sf::Font font;
 
-    // Absolute pad, want ik krijg het relatief niet werkend
+    std::filesystem::path projectDirectory = std::filesystem::current_path();
+    std::filesystem::path caughtSoundPath = projectDirectory / "SoundFiles" / "caught.wav";
+    std::filesystem::path explosionSoundPath = projectDirectory / "SoundFiles" / "explosion.wav";
+    std::filesystem::path musicFilePath = projectDirectory / "SoundFiles" / "background_music.wav";
+    sf::Music backgroundMusic;
+
+    sf::SoundBuffer caughtBuffer;
+    sf::SoundBuffer explosionBuffer;
+
     if (!font.loadFromFile("arial.ttf"))
     {
         std::cerr << "Failed to load font!" << std::endl;
         return -1;
     }
+
+    if (!backgroundMusic.openFromFile(musicFilePath.string())) {
+        std::cout << "Error loading background music!" << std::endl;
+        return -1;
+    }
+
+    if (!caughtBuffer.loadFromFile(caughtSoundPath.string())) {
+        std::cout << "Error loading caught sound!" << std::endl;
+    }
+    if (!explosionBuffer.loadFromFile(explosionSoundPath.string())) {
+        std::cout << "Error loading explosion sound!" << std::endl;
+    }
+
+    sf::Sound caughtSound(caughtBuffer);
+    sf::Sound explosionSound(explosionBuffer);
+
+
+
+    backgroundMusic.setLoop(true);
+    backgroundMusic.play();
 
     sf::Text scoreText;
     scoreText.setFont(font);
@@ -115,6 +143,7 @@ int main()
                     std::cout << "Collision detected!" << std::endl;
                     score++;
                     scoreText.setString("Score: " + std::to_string(score));
+                    caughtSound.play();
                     it = enemies.erase(it);
                 }
 
@@ -152,6 +181,7 @@ int main()
             std::cout << enemiesRemoved << " enemy got removed" << std::endl;
             lives--;
             livesText.setString("Lives: " + std::to_string(lives));
+            explosionSound.play();
         }
 
         window.clear();
